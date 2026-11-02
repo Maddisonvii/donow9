@@ -163,6 +163,7 @@ button.btn.act-off{border-color:var(--accent2);color:var(--accent2)}
 #tbar.warn{background:#f05060}
 
 #grid-copy{display:none}
+.sol-body.sol-one{font-size:calc(var(--fs) * 0.9 * 1.4)}
 @media screen{
   body.fit #grid{grid-template-rows:1fr 1fr auto;gap:10px;padding:10px 14px;overflow:hidden;max-width:none;align-content:stretch}
   body.fit #hint{display:none}
@@ -277,6 +278,12 @@ button.btn.act-off{border-color:var(--accent2);color:var(--accent2)}
   body.ipad #grid-copy{height:102mm!important}
   body.ipad{height:auto!important;max-height:none!important;overflow:visible!important}
   body.ipad .card[data-type="q"]{padding:5px 7px!important}
+  html{-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important}
+  body.ipad .card-q{font-size:.58rem!important;line-height:1.45!important}
+  body.ipad .card-src{font-size:.4rem!important}
+  body.ipad .card-lbl{font-size:.42rem!important}
+  body.ipad.print-with-sol .sol-body{font-size:.54rem!important}
+  body.ipad.print-with-sol .sol-label{font-size:.42rem!important}
 }
 
 /* ── SHIFT CONFIRM OVERLAY ── */
@@ -1082,6 +1089,15 @@ function cardQHtml(q) {
 }
 
 function tlKey(ci){ return `${ST.week},${ST.lesson},${ci},tl`; }
+// Einzeilige Lösungen (z. B. Ergebnisse) auf dem Bildschirm 40 % größer darstellen
+function markOneLine(root) {
+  (root || document).querySelectorAll('.card-sol.show .sol-body').forEach(b => {
+    b.classList.remove('sol-one');
+    const lh = parseFloat(getComputedStyle(b).lineHeight) || 20;
+    if (b.textContent.trim().startsWith('Keine Lösung hinterlegt')) return;
+    if (b.scrollHeight > 0 && b.scrollHeight <= lh * 1.5) b.classList.add('sol-one');
+  });
+}
 function fitGrid() {
   const g = document.getElementById('grid');
   if (!g) return;
@@ -1169,6 +1185,7 @@ function renderCards() {
   grid.innerHTML = html;
   renderMath(grid);
   fitGrid();
+  markOneLine(grid);
 
   grid.querySelectorAll('.tl-btn').forEach(btn => {
     btn.addEventListener('click', e => {
@@ -1197,6 +1214,7 @@ function renderCards() {
         const s = parseInt(btn.dataset.s);
         if (ST.cardSets[ci] !== s) {
           ST.cardSets[ci] = s;
+          ST.openSols.delete(ci);
           autoSave();
           renderCards();
         }
@@ -1213,6 +1231,7 @@ function renderCards() {
         const ci = parseInt(el.dataset.ci);
         ST.openSols.has(ci) ? ST.openSols.delete(ci) : ST.openSols.add(ci);
         el.querySelector('.card-sol').classList.toggle('show', ST.openSols.has(ci));
+        markOneLine(el);
       }, 220);
     });
     el.addEventListener('dblclick', e => {
@@ -1228,6 +1247,7 @@ function renderCards() {
       clickTimer = setTimeout(() => {
         ST.openSols.has('act') ? ST.openSols.delete('act') : ST.openSols.add('act');
         el.querySelector('.card-sol').classList.toggle('show', ST.openSols.has('act'));
+        markOneLine(el);
       }, 220);
     });
     el.addEventListener('dblclick', e => {
