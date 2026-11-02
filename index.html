@@ -197,11 +197,11 @@ button.btn.act-off{border-color:var(--accent2);color:var(--accent2)}
     flex:1!important;overflow:hidden!important;
   }
   body.print-with-sol .sol-label{
-    font-size:.86rem!important;font-weight:700!important;letter-spacing:1.2px!important;
+    font-size:.5rem!important;font-weight:700!important;letter-spacing:1.2px!important;
     text-transform:uppercase!important;color:#27825a!important;margin-bottom:4px!important;
   }
   body.print-with-sol .sol-body{
-    font-size:1.13rem!important;color:#000!important;line-height:1.45!important;
+    font-size:.6rem!important;color:#000!important;line-height:1.45!important;
   }
 
   /* Grid: 2×2, füllt das komplette A4-Blatt */
@@ -224,13 +224,14 @@ button.btn.act-off{border-color:var(--accent2);color:var(--accent2)}
   .card-hd{margin-bottom:8px!important;flex-shrink:0!important}
   .card-num{background:#222!important;color:#fff!important}
   .card-lbl{color:#444!important}
-  .card-src{color:#888!important;font-size:.84rem!important}
-  .card-q{font-size:1.22rem!important;color:#000!important;
+  .card-src{color:#888!important;font-size:.5rem!important}
+  .card-q{font-size:.65rem!important;color:#000!important;
     flex-shrink:0!important;line-height:1.55!important}
 
   /* Bilder: Breite via Inline-Stil (scale%), Höhe proportional, kein Overflow */
   .card-img{
     max-width:100%!important;
+    width:calc(var(--sc,100) * .5%)!important;
     height:auto!important;
     object-fit:unset!important;
     display:block!important;
@@ -1100,7 +1101,7 @@ function renderCards() {
         <div class="card-src">↩ ${card.srcLabel}</div>
       </div>
       <div class="card-q">${cardQHtml(card.q)}</div>
-      ${card.img ? `<img class="card-img" src="${card.img.src}" style="width:${card.img.scale||100}%" alt="">` : ''}
+      ${card.img ? `<img class="card-img" src="${card.img.src}" style="width:${card.img.scale||100}%;--sc:${card.img.scale||100}" alt="">` : ''}
       <div class="card-sol${solOpen ? ' show' : ''}">
         <div class="sol-label">Lösung</div>
         <div class="sol-body">${card.sol ? processText(card.sol) : '<span style="color:var(--muted);font-style:italic">Keine Lösung hinterlegt — Doppelklick zum Bearbeiten</span>'}</div>
