@@ -163,6 +163,16 @@ button.btn.act-off{border-color:var(--accent2);color:var(--accent2)}
 #tbar.warn{background:#f05060}
 
 #grid-copy{display:none}
+@media screen{
+  body.fit #grid{grid-template-rows:1fr 1fr auto;gap:10px;padding:10px 14px;overflow:hidden;max-width:none;align-content:stretch}
+  body.fit #hint{display:none}
+  body.fit{overflow:hidden}
+  body.fit .card{min-height:0}
+  body.fit .card[data-type="q"]{display:flex;flex-direction:column;overflow:auto;padding-bottom:12px}
+  body.fit .card[data-type="q"]>*{flex-shrink:0}
+  body.fit .card[data-type="q"]>.card-img{flex:1 1 0;min-height:40px;width:auto!important;height:auto;max-width:calc(var(--sc,100) * 1%);object-fit:contain;object-position:left top;align-self:flex-start}
+  body.fit .card-act{overflow:auto;max-height:26vh}
+}
 /* ── PRINT ── */
 @media print{
   @page{size:A4 portrait;margin:1.2cm}
@@ -172,7 +182,7 @@ button.btn.act-off{border-color:var(--accent2);color:var(--accent2)}
     margin:0!important;padding:0!important;
     background:#fff!important;color:#000!important;overflow:visible!important}
   html,body{min-height:0!important;max-height:none!important}
-  body{min-height:0!important;height:263mm!important;max-height:263mm!important;overflow:hidden!important;break-after:avoid!important;page-break-after:avoid!important}
+  body{min-height:0!important;height:246mm!important;max-height:246mm!important;overflow:hidden!important;break-after:avoid!important;page-break-after:avoid!important}
   #toast,#shift-overlay,#editor-overlay{display:none!important}
   .card-traffic,#hint,#tbar-wrap,#toast{display:none!important;position:static!important}
   .card{animation:none!important;opacity:1!important;transform:none!important}
@@ -197,11 +207,11 @@ button.btn.act-off{border-color:var(--accent2);color:var(--accent2)}
     flex:1!important;overflow:hidden!important;
   }
   body.print-with-sol .sol-label{
-    font-size:.5rem!important;font-weight:700!important;letter-spacing:1.2px!important;
+    font-size:.52rem!important;font-weight:700!important;letter-spacing:1.2px!important;
     text-transform:uppercase!important;color:#27825a!important;margin-bottom:4px!important;
   }
   body.print-with-sol .sol-body{
-    font-size:.6rem!important;color:#000!important;line-height:1.45!important;
+    font-size:.68rem!important;color:#000!important;line-height:1.45!important;
   }
 
   /* Grid: 2×2, füllt das komplette A4-Blatt */
@@ -212,7 +222,7 @@ button.btn.act-off{border-color:var(--accent2);color:var(--accent2)}
     gap:10px!important;
     padding:0!important;margin:0!important;
     width:100%!important;
-    height:127mm!important;
+    height:118mm!important;
     overflow:hidden!important;
   }
   .card[data-type="q"]{
@@ -225,13 +235,13 @@ button.btn.act-off{border-color:var(--accent2);color:var(--accent2)}
   .card-num{background:#222!important;color:#fff!important}
   .card-lbl{color:#444!important}
   .card-src{color:#888!important;font-size:.5rem!important}
-  .card-q{font-size:.65rem!important;color:#000!important;
+  .card-q{font-size:.73rem!important;color:#000!important;
     flex-shrink:0!important;line-height:1.55!important}
 
   /* Bilder: Breite via Inline-Stil (scale%), Höhe proportional, kein Overflow */
   .card-img{
     max-width:100%!important;
-    width:calc(var(--sc,100) * .5%)!important;
+    width:calc(var(--disp,var(--sc,100)) * .8%)!important;
     height:auto!important;
     object-fit:unset!important;
     display:block!important;
@@ -247,7 +257,7 @@ button.btn.act-off{border-color:var(--accent2);color:var(--accent2)}
     gap:10px!important;
     padding:0!important;margin:0!important;
     width:100%!important;
-    height:131mm!important;
+    height:122mm!important;
     overflow:hidden!important;
     margin-top:4mm!important;border-top:1.5px dashed #888!important;padding-top:4mm!important;
     break-before:auto!important;page-break-before:auto!important;page-break-after:auto!important;break-after:auto!important;
@@ -304,6 +314,7 @@ button.btn.act-off{border-color:var(--accent2);color:var(--accent2)}
   <button class="btn" id="btn-shift" title="Diese Stunde um eine Stunde nach hinten verschieben">⇥ Stunde verschieben</button>
   <button class="btn" id="btn-print">⎙ Ohne Lösungen</button>
   <button class="btn" id="btn-print-sol">⎙ Mit Lösungen</button>
+  <button class="btn" id="btn-fit" title="Alle Aufgaben und den Aktivator ohne Scrollen anzeigen; Bilder passen sich automatisch an">⤢ Alles sichtbar</button>
   <button class="btn" id="btn-save">💾 Speichern</button>
   <button class="btn" id="btn-data-out" title="Alle deine Aufgaben-Änderungen als kleine Datei sichern (unabhängig von der App-Version)">⬇ Daten sichern</button>
   <button class="btn" id="btn-data-in" title="Gesicherte Daten wieder laden">⬆ Daten laden</button>
@@ -1064,6 +1075,18 @@ function cardQHtml(q) {
 }
 
 function tlKey(ci){ return `${ST.week},${ST.lesson},${ci},tl`; }
+function fitGrid() {
+  const g = document.getElementById('grid');
+  if (!g) return;
+  const btn = document.getElementById('btn-fit');
+  const on = document.body.classList.contains('fit');
+  if (btn) btn.classList.toggle('active', on);
+  if (!on) { g.style.height = ''; return; }
+  const top = g.getBoundingClientRect().top + window.scrollY;
+  const tb = document.getElementById('tbar-wrap');
+  const extra = (tb && getComputedStyle(tb).display !== 'none' && getComputedStyle(tb).position === 'fixed') ? tb.offsetHeight : 0;
+  g.style.height = Math.max(300, window.innerHeight - top - extra) + 'px';
+}
 function renderCards() {
   const grid = document.getElementById('grid');
   const data = getLessonData();
@@ -1138,6 +1161,7 @@ function renderCards() {
 
   grid.innerHTML = html;
   renderMath(grid);
+  fitGrid();
 
   grid.querySelectorAll('.tl-btn').forEach(btn => {
     btn.addEventListener('click', e => {
@@ -1700,8 +1724,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Remove existing copy if any
     const old = document.getElementById('grid-copy');
     if (old) old.remove();
-    // Clone the grid, keeping only the 4 question cards
+    // Tatsächlich angezeigte Bildbreite (Anteil an der Kartenbreite) merken,
+    // damit der Druck 80 % davon verwendet – auch im Modus „Alles sichtbar“
     const orig = document.getElementById('grid');
+    orig.querySelectorAll('.card[data-type="q"] .card-img').forEach(im => {
+      const card = im.closest('.card'), cs = getComputedStyle(card);
+      const inner = card.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const w = im.getBoundingClientRect().width;
+      if (inner > 0 && w > 0) im.style.setProperty('--disp', (w / inner * 100).toFixed(2));
+    });
+    // Clone the grid, keeping only the 4 question cards
     const copy = orig.cloneNode(true);
     copy.id = 'grid-copy';
     // Remove activator from copy
@@ -1736,6 +1768,15 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { window.print(); }, 180);
   });
   document.getElementById('btn-save').addEventListener('click', exportHTML);
+  document.getElementById('btn-fit').addEventListener('click', () => {
+    const on = !document.body.classList.contains('fit');
+    document.body.classList.toggle('fit', on);
+    try { localStorage.setItem('donow_fit', on ? '1' : '0'); } catch(e) {}
+    fitGrid();
+  });
+  window.addEventListener('resize', fitGrid);
+  let _fit0 = true; try { _fit0 = localStorage.getItem('donow_fit') !== '0'; } catch(e) {}
+  document.body.classList.toggle('fit', _fit0);
   document.getElementById('btn-data-out').addEventListener('click', exportData);
   document.getElementById('btn-data-in').addEventListener('click', () => document.getElementById('data-file').click());
   document.getElementById('data-file').addEventListener('change', e => { if (e.target.files[0]) importData(e.target.files[0]); e.target.value=''; });
